@@ -51,4 +51,4 @@ updates and soft deletes therefore go through ONE MERGE (deletes ride along with
 memory while planning (build-log F11), so they stay behind a setting (`VSI_DELETION_VECTORS`).
 
 **ADR-012 Public data, local-first, no accounts.** Everything runs with Docker + Python + Java on a laptop. The same
-code runs on Databricks by changing the Spark master and storage paths (see MILESTONES T5).
+code runs on Databricks by changing the Spark master and storage paths.

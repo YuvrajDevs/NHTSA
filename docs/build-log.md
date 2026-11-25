@@ -7,7 +7,7 @@ the fix, and the lesson.
 
 ## Phase 0. What to build and why
 
-**Goal:** a batch data product that covers what a Data Engineer 1 role asks for and a streaming project doesn't:
+**Goal:** a batch data product covering what a streaming project doesn't:
 SQL-heavy dimensional modelling, ETL/ELT with incremental loads, data quality and contracts, a catalog with
 lineage and owners, orchestration, and data prepared for AI.
 
@@ -167,7 +167,7 @@ RESULT: PASS
 
 Large recalls are almost always preceded by complaints; the simple spike rule catches about a quarter of them, a
 median of a year ahead. Recalls pushed by NHTSA (ODI) had prior complaints more often (39%) than manufacturer-initiated
-ones (20%), consistent with NHTSA using complaints to open investigations. Improving the signal is Milestone T1.
+ones (20%), consistent with NHTSA using complaints to open investigations. Improving the signal is a planned next step.
 
 **Semantic layer:** `metrics.yml` defines each business metric once (table, SQL, description, owner).
 

@@ -64,7 +64,7 @@ erDiagram
     }
 ```
 
-## Grain decisions (the part interviewers ask about)
+## Grain decisions
 
 | Table | One row is | Why |
 |---|---|---|

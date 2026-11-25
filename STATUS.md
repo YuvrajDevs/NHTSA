@@ -21,7 +21,7 @@ final run, publishing its generated reports, and finishing the write-up. Nothing
 | Airflow: daily DAG + rebuild DAG, all 11 tasks green in Docker (sample mode) | `dags/`, build-log Phase 10, F8-F10 |
 | Daily MERGE tuning: 1.79 GB -> 0.89 GB written, 70 s -> 44 s | `docs/performance.md`, build-log Phase 11 |
 | 15 pytest tests, GitHub Actions CI workflow | `tests/`, `.github/workflows/ci.yml` |
-| Docs: README, build log (F1-F12), data model, 12 ADRs, milestones, resume kit, project page | `docs/`, `site/` |
+| Docs: README, build log (F1-F12), data model, 12 ADRs, project page | `docs/`, `site/` |
 
 ## Left to do
 
@@ -31,10 +31,7 @@ final run, publishing its generated reports, and finishing the write-up. Nothing
    `docs/ai-readiness.json`, `site/catalog.json`, and rebuild `site/data.json` (`python scripts/build_site.py`), which
    also adds the example searches. These were left out of the repo on purpose: the copies on disk came from a
    20,000-row test run and would show the wrong numbers.
-3. **Re-check every number in README and RESUME.md against that run.** The early-warning table was computed before the
+3. **Re-check every number in README against that run.** The early-warning table was computed before the
    simulated day was applied and should only move by a few tenths of a percent.
 4. **Confirm CI passes on GitHub** (first push; it runs Spark tests with Java 17).
 5. **Turn on GitHub Pages** for the project page (Settings -> Pages -> Source: GitHub Actions).
-6. **Learning-platform walkthrough** of this project, like the Turbofan one.
-7. Optional extensions are in `MILESTONES.md` Part B (better early-warning signal, vPIC enrichment, scale test,
-   dbt port, Databricks, dashboard).
