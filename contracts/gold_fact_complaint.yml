@@ -1,0 +1,29 @@
+table: gold.fact_complaint
+description: Complaint facts for analysis. Join to dim_vehicle, dim_component, dim_manufacturer, dim_state, dim_date.
+owner: vehicle-safety-data-product
+steward: data-engineering
+grain: complaint x component (complaint_component_id)
+primary_key: [complaint_component_id]
+row_count: {min: 2000000, equals_table: silver.complaints}
+columns:
+  complaint_id: {type: string, nullable: false}
+  vehicle_key: {type: bigint, nullable: false}
+  component_key: {type: bigint, nullable: false}
+  manufacturer_key: {type: bigint, nullable: false}
+  state_key: {type: bigint, nullable: false}
+  received_date_key: {type: int, nullable: false}
+  crash_flag: {type: int, accepted_values: [0, 1]}
+  fire_flag: {type: int, accepted_values: [0, 1]}
+relationships:
+  - {column: vehicle_key, references: gold.dim_vehicle.vehicle_key}
+  - {column: component_key, references: gold.dim_component.component_key}
+  - {column: manufacturer_key, references: gold.dim_manufacturer.manufacturer_key}
+  - {column: state_key, references: gold.dim_state.state_key}
+  - {column: received_date_key, references: gold.dim_date.date_key}
+  - {column: fail_date_key, references: gold.dim_date.date_key}
+checks:
+  - name: unknown members are rare
+    description: Facts pointing at the 'unknown' vehicle mean the make was missing in the source.
+    sql_violations: "vehicle_key = -1"
+    max_violation_pct: 0.5
+    severity: warn

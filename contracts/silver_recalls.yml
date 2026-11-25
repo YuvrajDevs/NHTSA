@@ -1,0 +1,26 @@
+table: silver.recalls
+description: Typed recall records (HTML stripped from text). One row per campaign x make/model/year x component.
+owner: vehicle-safety-data-product
+steward: data-engineering
+grain: recall record (record_id)
+update: daily full snapshot; version history kept in silver.recalls_history (SCD type 2)
+freshness: {column: report_received_date, max_age_days: 14, severity: warn}
+row_count: {min: 300000}
+primary_key: [record_id]
+columns:
+  record_id: {type: int, nullable: false}
+  campaign_id: {type: string, nullable: false, regex: "^[0-9]{2}[A-Z][0-9A-Z]{3}[0-9]{3}$", description: "NHTSA campaign number, e.g. 24V123000. 2021 has ids with letters (21V00M000...), accepted."}
+  recall_type: {type: string, accepted_values: [V, E, T, C, I, X]}
+  potentially_affected: {type: int, range: [0, 100000000], description: "Per CAMPAIGN; repeated on every row. Use gold.dim_recall_campaign to sum it."}
+  report_received_date: {type: date, max_null_pct: 1}
+  influenced_by: {type: string}
+  model_year: {type: int, range: [1949, 2030]}
+checks:
+  - name: manufacturing window ordered
+    sql_violations: "mfg_begin_date IS NOT NULL AND mfg_end_date IS NOT NULL AND mfg_end_date < mfg_begin_date"
+    max_violation_pct: 0.5
+    severity: warn
+  - name: no HTML left in summaries
+    sql_violations: "defect_summary RLIKE '<[a-zA-Z/][^>]*>'"
+    max_violation_pct: 0
+    severity: error

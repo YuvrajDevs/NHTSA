@@ -1,0 +1,18 @@
+table: silver.investigations
+description: Typed NHTSA defect investigations. One row per investigation x vehicle x component x resulting campaign x manufacturer.
+owner: vehicle-safety-data-product
+steward: data-engineering
+grain: action_number x make x model x model_year x component_path x campaign_id x manufacturer
+update: daily full snapshot
+row_count: {min: 100000}
+primary_key: [action_number, make, model, model_year, component_path, campaign_id, manufacturer]
+columns:
+  action_number: {type: string, nullable: false, regex: "^[A-Z]{2}[0-9]{5,6}$", max_violation_pct: 1}
+  action_type: {type: string, accepted_values: [PE, EA, DP, RQ, SQ, EQ, AQ, ID, RP, TA, C]}
+  opened_date: {type: date, max_null_pct: 1}
+checks:
+  - name: closed after opened
+    description: 19 old investigations (1978-2000) are closed before they opened in the source. Gold leaves days_open NULL for them.
+    sql_violations: "closed_date IS NOT NULL AND closed_date < opened_date"
+    max_violation_pct: 0.05
+    severity: warn

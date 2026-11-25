@@ -1,0 +1,73 @@
+tables:
+  - table: gold.dim_vehicle
+    description: Make + model + model year. Key -1 = unknown.
+    owner: vehicle-safety-data-product
+    grain: make x model x model_year
+    primary_key: [vehicle_key]
+    columns: {vehicle_key: {type: bigint, nullable: false}, make: {type: string, nullable: false}}
+  - table: gold.dim_component
+    description: Component hierarchy flattened into system / subsystem / leaf levels.
+    owner: vehicle-safety-data-product
+    grain: component_path
+    primary_key: [component_key]
+    columns: {component_key: {type: bigint, nullable: false}, component_system: {type: string, nullable: false}}
+  - table: gold.dim_manufacturer
+    description: Manufacturer legal names, with a normalised group name.
+    owner: vehicle-safety-data-product
+    grain: manufacturer_name
+    primary_key: [manufacturer_key]
+  - table: gold.dim_state
+    description: US states, DC and territories with census region.
+    owner: vehicle-safety-data-product
+    grain: state_code
+    primary_key: [state_key]
+    row_count: {min: 57}
+  - table: gold.dim_date
+    description: Calendar 1949-2030; date_key YYYYMMDD, -1 = unknown.
+    owner: vehicle-safety-data-product
+    grain: day
+    primary_key: [date_key]
+  - table: gold.dim_recall_campaign
+    description: One row per recall campaign; the only place units potentially affected is additive.
+    owner: vehicle-safety-data-product
+    grain: campaign_id
+    primary_key: [campaign_id]
+    columns: {potentially_affected: {type: int, range: [0, 100000000]}}
+    relationships:
+      - {column: manufacturer_key, references: gold.dim_manufacturer.manufacturer_key}
+  - table: gold.fact_recall_vehicle
+    description: Which vehicles and components each recall covers.
+    owner: vehicle-safety-data-product
+    grain: recall record (campaign x vehicle x component)
+    primary_key: [recall_record_id]
+    relationships:
+      - {column: campaign_id, references: gold.dim_recall_campaign.campaign_id}
+      - {column: vehicle_key, references: gold.dim_vehicle.vehicle_key}
+      - {column: component_key, references: gold.dim_component.component_key}
+  - table: gold.fact_investigation
+    description: NHTSA investigations by vehicle and component, and the recall they led to.
+    owner: vehicle-safety-data-product
+    grain: investigation x vehicle x component x campaign x manufacturer
+    relationships:
+      - {column: vehicle_key, references: gold.dim_vehicle.vehicle_key}
+  - table: gold.mart_component_risk_monthly
+    description: "Data product: monthly complaint trend per make and component system, with a spike flag."
+    owner: vehicle-safety-data-product
+    grain: make x component_system x month
+    primary_key: [make, component_system, month_start]
+    columns: {complaints: {type: bigint, range: [0, 1000000]}}
+  - table: gold.mart_recall_early_warning
+    description: "Data product: for each vehicle recall since 2000, the complaints and spike signals that came before it."
+    owner: vehicle-safety-data-product
+    grain: vehicle recall campaign (2000+)
+    primary_key: [campaign_id]
+    checks:
+      - name: lead times are positive
+        sql_violations: "days_first_complaint_to_recall <= 0 OR days_spike_to_recall <= 0"
+        max_violation_pct: 0
+        severity: error
+  - table: gold.mart_manufacturer_scorecard
+    description: "Data product: yearly complaints, recalls, units and investigations per manufacturer group."
+    owner: vehicle-safety-data-product
+    grain: manufacturer_group x year
+    primary_key: [manufacturer_group, year]

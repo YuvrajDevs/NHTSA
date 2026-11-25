@@ -1,0 +1,19 @@
+# Local Airflow (standalone: scheduler + web server + SQLite in one container). No accounts needed.
+#   docker compose up -d --build      -> http://localhost:8080  (user admin, password printed in the logs:
+#                                        docker compose logs airflow | grep "Password")
+# The project folder is mounted at /opt/vsi, so DAGs and code changes are picked up without rebuilding.
+services:
+  airflow:
+    build: .
+    container_name: vsi-airflow
+    command: bash -c "airflow db migrate && airflow pools set spark 1 'one Spark job at a time' && airflow standalone"
+    ports: ["8080:8080"]
+    environment:
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/vsi/dags
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+      PYTHONPATH: /opt/vsi
+      VSI_DRIVER_MEMORY: ${VSI_DRIVER_MEMORY:-4g}
+      VSI_SAMPLE_ROWS: ${VSI_SAMPLE_ROWS:-0}
+    volumes:
+      - .:/opt/vsi

@@ -1,0 +1,68 @@
+# Semantic layer: every business metric defined ONCE, with its table, grain and owner.
+# Dashboards, analysts and AI assistants should use these names instead of re-writing the SQL.
+# Rendered into the data catalog (docs/catalog.md) by `python -m vsi.cli catalog`.
+
+owner: vehicle-safety-data-product
+metrics:
+  - name: complaints
+    label: Complaints
+    description: Number of distinct consumer complaints. One complaint can name several components, so never COUNT(*) the fact table for this.
+    table: gold.fact_complaint
+    sql: COUNT(DISTINCT complaint_id)
+    dimensions: [vehicle, component, manufacturer, state, received_date, fail_date]
+
+  - name: complaint_component_mentions
+    label: Complaint-component mentions
+    description: Number of (complaint, component) pairs. Use for component analysis where each component named counts once.
+    table: gold.fact_complaint
+    sql: COUNT(*)
+
+  - name: crash_complaints
+    label: Complaints involving a crash
+    table: gold.fact_complaint
+    sql: COUNT(DISTINCT CASE WHEN crash_flag = 1 THEN complaint_id END)
+
+  - name: fire_complaints
+    label: Complaints involving a fire
+    table: gold.fact_complaint
+    sql: COUNT(DISTINCT CASE WHEN fire_flag = 1 THEN complaint_id END)
+
+  - name: recall_campaigns
+    label: Recall campaigns
+    description: Number of distinct recall campaigns.
+    table: gold.dim_recall_campaign
+    sql: COUNT(*)
+
+  - name: units_potentially_affected
+    label: Units potentially affected
+    description: Vehicles/items the manufacturer reported as potentially affected. Additive ONLY at campaign grain (dim_recall_campaign); summing raw recall rows over-counts.
+    table: gold.dim_recall_campaign
+    sql: SUM(potentially_affected)
+
+  - name: investigations_opened
+    label: Investigations opened
+    table: gold.fact_investigation
+    sql: COUNT(DISTINCT action_number)
+
+  - name: pct_recalls_with_prior_complaints
+    label: Recalls preceded by complaints (%)
+    description: Share of vehicle recalls (2000+) with at least one matching complaint (same make, model, year and component system) in the 3 years before the recall report.
+    table: gold.mart_recall_early_warning
+    sql: 100.0 * AVG(CAST(had_prior_complaints AS INT))
+
+  - name: median_days_first_complaint_to_recall
+    label: Days from first complaint to recall (median)
+    table: gold.mart_recall_early_warning
+    sql: PERCENTILE(days_first_complaint_to_recall, 0.5)
+
+  - name: pct_recalls_with_spike_signal
+    label: Recalls preceded by a complaint spike (%)
+    description: Share of vehicle recalls where the spike rule fired for a covered make and component system in the 24 months before the recall report.
+    table: gold.mart_recall_early_warning
+    sql: 100.0 * AVG(CAST(had_spike_signal AS INT))
+
+  - name: is_spike
+    label: Complaint spike
+    description: "Monthly flag on mart_component_risk_monthly: complaints >= 10 AND complaints >= 3 x average of the previous 12 months (zero months included) AND at least 6 months of history."
+    table: gold.mart_component_risk_monthly
+    sql: is_spike

@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vehicle Safety Intelligence</title>
+<meta name="description" content="A governed batch data product on 2.3M public NHTSA vehicle complaints, recalls and investigations: medallion lakehouse, SQL star schema, data contracts, catalog, AI-ready documents, Airflow.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f8fc;--card:#fff;--ink:#0f1b33;--muted:#5a6785;--line:#dde5f2;--blue:#1d4ed8;--blue-soft:#e8efff;--navy:#0b1a3a;
+--yellow:#f6c343;--yellow-soft:#fff6d6;--red:#d92d20;--red-soft:#fde8e7;--green:#12805c;--mono:'JetBrains Mono',ui-monospace,monospace}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--blue)}.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+header.hero{background:radial-gradient(1100px 380px at 85% -10%,#2f5bea 0,transparent 60%),var(--navy);color:#fff;padding:72px 0 56px}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--yellow)}
+h1{font-size:clamp(34px,6vw,56px);line-height:1.05;margin:14px 0 16px;letter-spacing:-.02em}
+.lede{font-size:clamp(17px,2.2vw,20px);color:#c9d6f5;max-width:780px;margin:0}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.btn{display:inline-flex;padding:11px 18px;border-radius:10px;font-weight:600;text-decoration:none;font-size:15px}
+.btn.primary{background:var(--yellow);color:var(--navy)}.btn.ghost{border:1px solid #3a4f86;color:#fff}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:40px}
+.stat{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:16px}
+.stat b{display:block;font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums}.stat span{font-size:13px;color:#b5c3e6}
+section{padding:56px 0 8px}h2{font-size:clamp(24px,3.4vw,32px);letter-spacing:-.01em;margin:0 0 8px}
+h3{margin:0 0 10px;font-size:18px}.sub{color:var(--muted);margin:0 0 24px;max-width:780px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid2>*{min-width:0}@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+.scroll{overflow-x:auto}.arch svg{min-width:900px;width:100%;height:auto;display:block}
+svg text{font-family:Inter,sans-serif}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+select{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 10px;max-width:100%;color:var(--ink)}
+.chart svg{width:100%;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:6px}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:600;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}td.num{font-variant-numeric:tabular-nums}
+.pass{color:var(--green);font-weight:700}.callout{border-left:4px solid var(--yellow);background:var(--yellow-soft);padding:12px 16px;border-radius:0 10px 10px 0;margin:16px 0 0}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px}.kv dt{color:var(--muted)}.kv dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}.tabs button{font:inherit;font-size:13px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;cursor:pointer}
+.tabs button[aria-pressed=true]{background:var(--blue);color:#fff;border-color:var(--blue)}
+.tlist{display:grid;gap:8px}.titem{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff}
+.titem summary{cursor:pointer;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline;list-style:none}
+.titem summary::-webkit-details-marker{display:none}.titem code{font:600 14px var(--mono)}
+.pill{font:600 11px/1 var(--mono);padding:4px 8px;border-radius:999px;background:var(--blue-soft);color:var(--blue)}.pill.pii{background:var(--red-soft);color:var(--red)}
+.small{font-size:13px;color:var(--muted)}.doc{border-top:1px solid var(--line);padding:10px 0;font-size:14px}.doc:first-of-type{border-top:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px}
+pre{background:var(--navy);color:#e3ebff;border-radius:12px;padding:16px;overflow-x:auto;font:13px/1.6 var(--mono)}
+footer{padding:48px 0 60px;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">Data engineering project · batch · data product · <span style="background:#f6c343;color:#0b1a3a;padding:2px 6px;border-radius:4px">in progress</span></div>
+  <h1>Vehicle Safety Intelligence</h1>
+  <p class="lede">A governed data product on public US road-safety data: <b>2.3 million consumer complaints</b>, every recall since 1967 and every defect investigation since 1972, refreshed daily from NHTSA. It answers one question: <b>which components are trending toward a recall, and could complaints have warned us before past recalls?</b></p>
+  <div class="btns">
+    <a class="btn primary" href="#warning">See the answer</a>
+    <a class="btn ghost" id="repo" href="https://github.com/YuvrajDevs/NHTSA">Code on GitHub</a>
+    <a class="btn ghost" id="log" href="https://github.com/YuvrajDevs/NHTSA/blob/main/docs/build-log.md">Build log: every decision and bug</a>
+  </div>
+  <div class="stats">
+    <div class="stat"><b>2.3M</b><span>complaint rows (1.6 GB text) + 330K recall + 154K investigation rows</span></div>
+    <div class="stat"><b>1,500 / 1,500</b><span>daily changes detected on a test day with known changes, 0 extra</span></div>
+    <div class="stat"><b id="s-q">89</b><span>data-contract checks; the first run found 6 real problems in the source</span></div>
+    <div class="stat"><b>91%</b><span>of large recalls were preceded by matching complaints</span></div>
+    <div class="stat"><b id="s-pii">47K</b><span>personal details scrubbed before the text is used for AI</span></div>
+  </div>
+</div></header>
+
+<main class="wrap">
+<section id="arch">
+  <h2>How data flows</h2>
+  <p class="sub">NHTSA publishes full files every day. Bronze keeps every line as received, silver works out what changed since yesterday, gold is a star schema in SQL, and nothing reaches consumers before the data contracts pass. Airflow runs it daily.</p>
+  <div class="card scroll arch"><svg viewBox="0 0 1000 300" role="img" aria-label="Pipeline diagram">
+    <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8da2c9"/></marker></defs>
+    <g stroke="#8da2c9" stroke-width="2" fill="none" marker-end="url(#ar)">
+      <path d="M118,140 H150"/><path d="M262,140 H294"/><path d="M406,140 H438"/><path d="M570,140 H602"/><path d="M734,140 H766"/>
+      <path d="M840,104 V70"/><path d="M840,176 V210"/>
+    </g>
+    <g font-size="13">
+      <rect x="8" y="100" width="110" height="80" rx="12" fill="#eef2fa" stroke="#c9d5ec"/><text x="63" y="128" text-anchor="middle" font-weight="700">NHTSA files</text><text x="63" y="146" text-anchor="middle" fill="#5a6785" font-size="11">complaints · recalls</text><text x="63" y="161" text-anchor="middle" fill="#5a6785" font-size="11">investigations</text>
+      <rect x="150" y="100" width="112" height="80" rx="12" fill="#fff" stroke="#c9d5ec"/><text x="206" y="128" text-anchor="middle" font-weight="700">Landing</text><text x="206" y="146" text-anchor="middle" fill="#5a6785" font-size="11">skip if unchanged</text><text x="206" y="161" text-anchor="middle" fill="#5a6785" font-size="11">SHA-256 manifest</text>
+      <rect x="294" y="100" width="112" height="80" rx="12" fill="#f6e7d2" stroke="#e0c49c"/><text x="350" y="128" text-anchor="middle" font-weight="700">Bronze</text><text x="350" y="146" text-anchor="middle" fill="#5a6785" font-size="11">every line as received</text><text x="350" y="161" text-anchor="middle" fill="#5a6785" font-size="11">replayable</text>
+      <rect x="438" y="92" width="132" height="96" rx="12" fill="#eef1f5" stroke="#c7ced9"/><text x="504" y="120" text-anchor="middle" font-weight="700">Silver</text><text x="504" y="138" text-anchor="middle" fill="#5a6785" font-size="11">typed · cleaned</text><text x="504" y="153" text-anchor="middle" fill="#5a6785" font-size="11">changes: new/edit/delete</text><text x="504" y="168" text-anchor="middle" fill="#d92d20" font-size="11">quarantine + reason</text>
+      <rect x="602" y="92" width="132" height="96" rx="12" fill="#fff6d6" stroke="#ecd48a"/><text x="668" y="120" text-anchor="middle" font-weight="700">Gold (SQL)</text><text x="668" y="138" text-anchor="middle" fill="#5a6785" font-size="11">star schema</text><text x="668" y="153" text-anchor="middle" fill="#5a6785" font-size="11">3 data-product marts</text><text x="668" y="168" text-anchor="middle" fill="#5a6785" font-size="11">metrics defined once</text>
+      <rect x="766" y="104" width="148" height="72" rx="12" fill="#0b1a3a"/><text x="840" y="134" text-anchor="middle" font-weight="700" fill="#fff">Quality gate</text><text x="840" y="153" text-anchor="middle" fill="#b5c3e6" font-size="11">89 contract checks</text>
+      <rect x="770" y="14" width="140" height="56" rx="12" fill="#e8efff" stroke="#bccdf6"/><text x="840" y="38" text-anchor="middle" font-weight="700">AI documents</text><text x="840" y="55" text-anchor="middle" fill="#5a6785" font-size="11">scrubbed · searchable</text>
+      <rect x="770" y="210" width="140" height="56" rx="12" fill="#e8efff" stroke="#bccdf6"/><text x="840" y="234" text-anchor="middle" font-weight="700">Data catalog</text><text x="840" y="251" text-anchor="middle" fill="#5a6785" font-size="11">owners · lineage · PII</text>
+      <text x="8" y="292" fill="#5a6785" font-size="12">Airflow: download → bronze → silver → gold → quality gate → AI + catalog, daily, by logical date</text>
+    </g></svg></div>
+</section>
+
+<section id="warning">
+  <h2>Could complaints have warned us before recalls?</h2>
+  <p class="sub">For every vehicle recall since 2000: did people complain about the same make, model, year and component system in the 3 years before, and did a simple spike rule (a month with 3× the usual complaints) fire first? <span id="ew-n"></span></p>
+  <div class="grid2">
+    <div class="card"><h3>By recall size</h3><div class="chart" id="bars"></div>
+      <div class="legend"><span><i style="background:#1d4ed8"></i>preceded by matching complaints</span><span><i style="background:#f6c343"></i>spike rule fired first</span></div></div>
+    <div class="card scroll"><h3>The numbers</h3><table id="ewt"></table>
+      <p class="small" id="init"></p></div>
+  </div>
+  <p class="callout">Big recalls almost always have complaints beforehand. The simple spike rule catches about a quarter of them, typically about a year ahead. A better signal is the first extension in MILESTONES.md.</p>
+</section>
+
+<section id="trend">
+  <h2>Component trends, month by month</h2>
+  <p class="sub">Monthly complaints for the make + component pairs with the most large recalls. Yellow dots are months the spike rule fired; vertical lines are recalls affecting 100,000+ units (green if a spike came first).</p>
+  <div class="card">
+    <div class="controls"><select id="pair" aria-label="Make and component system"></select></div>
+    <div class="chart" id="line"></div>
+    <div class="legend"><span><i style="background:#1d4ed8"></i>complaints per month</span><span><i style="background:#f6c343"></i>spike</span><span><i style="background:#12805c"></i>recall, spike came first</span><span><i style="background:#d92d20"></i>recall, no spike first</span></div>
+  </div>
+</section>
+
+<section id="trust">
+  <h2>Data you can trust, proven rather than claimed</h2>
+  <div class="grid2">
+    <div class="card"><h3>Daily change detection</h3>
+      <p class="small">NHTSA only publishes full files. Each day is compared with the current tables to find new, edited and removed records. Tested on a simulated day with known changes:</p>
+      <div class="scroll"><table><tr><th></th><th>New</th><th>Edited</th><th>Removed</th><th>Broken lines</th></tr>
+      <tr><td>Complaints</td><td class="pass">250/250</td><td class="pass">250/250</td><td class="pass">250/250</td><td class="pass">2/2 quarantined</td></tr>
+      <tr><td>Recalls</td><td class="pass">250/250</td><td class="pass">250/250</td><td class="pass">250/250</td><td class="pass">-</td></tr></table></div>
+      <p class="small">0 missing, 0 extra. Recalls also keep full version history (SCD type 2).</p></div>
+    <div class="card"><h3>Data contracts</h3><dl class="kv" id="qual"></dl>
+      <p class="small">First run blocked the pipeline on 6 real issues in NHTSA's data (undocumented codes, malformed ids, investigations closed before they opened...). Each was investigated and the decision written into the contract. Reconciliation also caught a bug that had silently dropped 35,423 rows (a NULL in a join key).</p></div>
+  </div>
+</section>
+
+<section id="catalog">
+  <h2>Data catalog (generated, never hand-written)</h2>
+  <p class="sub">Descriptions, owners, grain and personal-data tags come from the contracts; rows and versions from Delta; lineage is parsed from the SQL. Click a table.</p>
+  <div class="card"><div class="tabs" id="layers"></div><div class="tlist" id="tables"></div></div>
+</section>
+
+<section id="ai">
+  <h2>Ready for AI</h2>
+  <p class="sub">Complaint narratives become clean documents: phone numbers, emails, VINs and links replaced by placeholders, with vehicle, components, dates and severity attached. A similarity index works with no external service. Example searches:</p>
+  <div class="grid2"><div class="card"><dl class="kv" id="aikv"></dl></div><div class="card" id="examples"></div></div>
+</section>
+
+<section id="perf">
+  <h2>Performance</h2>
+  <p class="sub" id="perf-sub">The daily update changes a few hundred of 2.3 million rows, but a Delta MERGE rewrites every data file that holds a changed row: here, all of them. Doing inserts, updates and soft deletes in one MERGE instead of two halves the work. Measured from Delta's own transaction log.</p>
+  <div class="card scroll" id="perf-card"><table id="perft"></table></div>
+</section>
+
+<section id="stack">
+  <h2>Stack</h2>
+  <div class="chips"><span class="chip">PySpark 4</span><span class="chip">Delta Lake 4 (MERGE, deletion vectors, time travel)</span><span class="chip">Spark SQL star schema</span><span class="chip">Apache Airflow 2.10</span><span class="chip">Data contracts (YAML)</span><span class="chip">scikit-learn (TF-IDF retrieval)</span><span class="chip">DuckDB (profiling)</span><span class="chip">Docker</span><span class="chip">pytest + GitHub Actions</span><span class="chip">NHTSA public data</span></div>
+  <h2 style="margin-top:40px">Run it yourself</h2>
+<pre>python -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install -r requirements.txt
+python -m vsi.cli run            # today's NHTSA data, all steps
+python -m vsi.cli search "brake pedal went to the floor"
+docker compose up -d --build     # Airflow on http://localhost:8080</pre>
+</section>
+</main>
+<footer class="wrap">Built by Yuvraj Singh Shekhawat. Data: U.S. National Highway Traffic Safety Administration (public domain).</footer>
+
+<script>
+(function(){const m=location.hostname.match(/^([^.]+)\.github\.io$/),r=location.pathname.split('/').filter(Boolean)[0];
+ if(m&&r){const b=`https://github.com/${m[1]}/${r}`;document.getElementById('repo').href=b;document.getElementById('log').href=b+'/blob/main/docs/build-log.md';}})();
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=n=>n==null?'–':Number(n).toLocaleString('en-US');
+
+Promise.all([fetch('data.json').then(r=>r.json()),fetch('catalog.json').then(r=>r.json()).catch(()=>null)]).then(([D,C])=>{
+  // ---- early warning
+  const ew=D.early_warning;document.getElementById('ew-n').textContent=`(${fmt(ew.recalls)} recalls)`;
+  const W=520,H=230,L=120,bw=(W-L-20)/100;
+  document.getElementById('bars').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Share of recalls preceded by complaints and by a spike, by recall size">`+
+   ew.by_size.map((b,i)=>{const y=14+i*52;return `<text x="${L-8}" y="${y+16}" text-anchor="end" font-size="12" font-weight="600">${esc(b.size)}</text><text x="${L-8}" y="${y+31}" text-anchor="end" font-size="11" fill="#5a6785">${fmt(b.recalls)} recalls</text>
+   <rect x="${L}" y="${y}" width="${b.pct_prior*bw}" height="18" rx="4" fill="#1d4ed8"/><text x="${L+b.pct_prior*bw+6}" y="${y+13}" font-size="12" font-weight="700">${b.pct_prior}%</text>
+   <rect x="${L}" y="${y+22}" width="${b.pct_spike*bw}" height="14" rx="4" fill="#f6c343"/><text x="${L+b.pct_spike*bw+6}" y="${y+33}" font-size="11">${b.pct_spike}%</text>`}).join('')+`</svg>`;
+  document.getElementById('ewt').innerHTML='<tr><th>Units affected</th><th>Recalls</th><th>Complaints first</th><th>Spike first</th><th>Median spike lead</th></tr>'+
+   ew.by_size.map(b=>`<tr><td>${esc(b.size)}</td><td class="num">${fmt(b.recalls)}</td><td class="num">${b.pct_prior}%</td><td class="num">${b.pct_spike}%</td><td class="num">${b.median_spike_lead==null?'–':fmt(b.median_spike_lead)+' days'}</td></tr>`).join('');
+  document.getElementById('init').textContent='By who started the recall: '+ew.by_initiator.map(x=>`${x.influenced_by==='MFR'?'manufacturer':x.influenced_by==='ODI'?'NHTSA (ODI)':x.influenced_by} ${x.pct_prior}% had complaints first (${fmt(x.recalls)} recalls)`).join(' · ')+'.';
+
+  // ---- trend explorer
+  const sel=document.getElementById('pair');
+  sel.innerHTML=D.series.map((s,i)=>`<option value="${i}">${esc(s.make)} · ${esc(s.system)} (${s.recalls.length} large recalls)</option>`).join('');
+  function draw(){const s=D.series[+sel.value],v=s.complaints,n=v.length,Wd=900,Ht=320,Lf=48,R=14,T=14,B=34;
+    const [y0,m0]=s.start.split('-').map(Number),mi=d=>{const [y,m]=d.split('-').map(Number);return (y-y0)*12+(m-m0)};
+    const max=Math.max(5,...v),x=i=>Lf+i/(n-1)*(Wd-Lf-R),y=c=>T+(1-c/max)*(Ht-T-B);
+    let g='';for(let k=0;k<=4;k++){const c=Math.round(max*k/4);g+=`<line x1="${Lf}" x2="${Wd-R}" y1="${y(c)}" y2="${y(c)}" stroke="#eef2f8"/><text x="${Lf-6}" y="${y(c)+4}" text-anchor="end" font-size="11" fill="#5a6785">${c}</text>`}
+    for(let yr=y0+(y0%5?5-y0%5:0);yr<=y0+Math.floor(n/12);yr+=5){const i=(yr-y0)*12-(m0-1);if(i>=0&&i<n)g+=`<text x="${x(i)}" y="${Ht-12}" text-anchor="middle" font-size="11" fill="#5a6785">${yr}</text>`}
+    const rec=s.recalls.map(r=>{const i=mi(r.date.slice(0,7));return i<0||i>=n?'':`<line x1="${x(i)}" x2="${x(i)}" y1="${T}" y2="${Ht-B}" stroke="${r.flagged?'#12805c':'#d92d20'}" stroke-width="1.5" opacity=".6"><title>${esc(r.id)} · ${r.date} · ${fmt(r.units)} units</title></line>`}).join('');
+    const pts=v.map((c,i)=>`${x(i).toFixed(1)},${y(c).toFixed(1)}`).join(' ');
+    const sp=s.spikes.map(i=>`<circle cx="${x(i)}" cy="${y(v[i])}" r="4.5" fill="#f6c343" stroke="#0f1b33" stroke-width="1"><title>spike: ${v[i]} complaints</title></circle>`).join('');
+    document.getElementById('line').innerHTML=`<svg viewBox="0 0 ${Wd} ${Ht}" role="img" aria-label="Monthly complaints for ${esc(s.make)} ${esc(s.system)}">${g}${rec}<polyline points="${pts}" fill="none" stroke="#1d4ed8" stroke-width="1.6"/>${sp}</svg>`;}
+  sel.onchange=draw;draw();
+
+  // ---- quality + ai + perf
+  const q=D.quality;document.getElementById('s-q').textContent=q.checks;
+  document.getElementById('qual').innerHTML=[['Checks',q.checks],['Passed',q.passed],['Warnings (reported)',q.warnings],['Blocking',q.blocking],['Tables covered',q.tables],['Last run',q.run_date]].map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join('');
+  const a=D.ai.documents,pii=(a.phone||0)+(a.email||0)+(a.vin||0)+(a.url||0);document.getElementById('s-pii').textContent=Math.round(pii/1000)+'K';
+  document.getElementById('aikv').innerHTML=[['Documents',fmt(a.documents)],['Phone numbers removed',fmt(a.phone)],['Links removed',fmt(a.url)],['Emails removed',fmt(a.email)],['VINs removed',fmt(a.vin)],['Median length',a.median_tokens+' tokens (no chunking needed)'],['Search index',fmt(D.ai.index.documents)+' documents since '+D.ai.index.from_year]].map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('');
+  document.getElementById('examples').innerHTML=(D.examples&&D.examples.length)?D.examples.map(e=>`<h3>“${esc(e.query)}”</h3>`+e.results.map(r=>`<div class="doc"><b>${esc(r.vehicle)}</b> <span class="small">· ${esc(r.systems.join(', '))} · similarity ${r.score}</span><br>${esc(r.text.slice(0,180))}…</div>`)
+    .join('')).join(''):'<h3>Example searches</h3><p class="small">Coming with the final full run (see STATUS.md). Try it locally: <code>python -m vsi.cli search "brake pedal went to the floor"</code></p>';
+  if(D.perf&&D.perf.two_merges&&D.perf.single_merge){
+    const tot=v=>v.merges.reduce((o,m)=>({files:o.files+m.numTargetFilesRemoved,rows:o.rows+m.numTargetRowsCopied,bytes:o.bytes+m.numTargetBytesAdded,ms:o.ms+m.executionTimeMs}),{files:0,rows:0,bytes:0,ms:0});
+    const x=tot(D.perf.two_merges),y=tot(D.perf.single_merge);
+    document.getElementById('perft').innerHTML='<tr><th>Day-2 update of silver.complaints (750 changed rows of 2.3M)</th><th>Before: 2 MERGEs</th><th>After: 1 MERGE</th></tr>'+
+    [['MERGE operations',D.perf.two_merges.merges.length,D.perf.single_merge.merges.length],['Data files rewritten',x.files,y.files],['Unchanged rows copied',fmt(x.rows),fmt(y.rows)],['MB written',fmt(Math.round(x.bytes/1e6)),fmt(Math.round(y.bytes/1e6))],['MERGE time (s)',(x.ms/1000).toFixed(0),(y.ms/1000).toFixed(0)]].map(r=>`<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td></tr>`).join('');}
+  else document.getElementById('perf').style.display='none';
+
+  // ---- catalog
+  if(!C){document.getElementById('catalog').style.display='none';return}
+  const layers=['gold','silver','bronze'],tabs=document.getElementById('layers'),list=document.getElementById('tables');let cur='gold';
+  function show(){tabs.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===cur));
+    list.innerHTML=C.tables.filter(t=>t.layer===cur).map(t=>`<details class="titem"><summary><code>${esc(t.table)}</code><span class="small">${fmt(t.rows)} rows</span>${t.quality?`<span class="pill">quality ${t.quality.passed}/${t.quality.checks}</span>`:''}${t.columns.some(c=>c.pii)?'<span class="pill pii">contains personal data</span>':''}</summary>
+    <p>${esc(t.description||'')}</p><p class="small"><b>Grain:</b> ${esc(t.grain||'–')} · <b>Owner:</b> ${esc(t.owner||'–')} · <b>Delta version</b> ${t.version}<br><b>Upstream:</b> ${esc(t.upstream.join(', ')||'–')}<br><b>Downstream:</b> ${esc(t.downstream.join(', ')||'–')}${t.metrics.length?`<br><b>Metrics:</b> ${esc(t.metrics.join(', '))}`:''}</p>
+    <div class="scroll"><table><tr><th>Column</th><th>Type</th><th>Notes</th></tr>${t.columns.filter(c=>!c.name.startsWith('_')).map(c=>`<tr><td><code>${esc(c.name)}</code></td><td>${esc(c.type)}</td><td>${c.pii?`<span class="pill pii">${esc(c.pii)}</span> `:''}${esc(c.description)}</td></tr>`).join('')}</table></div></details>`).join('');}
+  tabs.innerHTML=layers.map(l=>`<button data-l="${l}">${l} (${C.tables.filter(t=>t.layer===l).length})</button>`).join('');
+  tabs.querySelectorAll('button').forEach(b=>b.onclick=()=>{cur=b.dataset.l;show()});show();
+}).catch(e=>{document.querySelector('main').insertAdjacentHTML('afterbegin',`<p class="callout">Could not load data.json (${esc(e.message)}). Open this page through a web server or GitHub Pages.</p>`)});
+</script>
+</body>
+</html>

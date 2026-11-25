@@ -1,0 +1,35 @@
+table: silver.complaints
+description: Typed, standardised consumer complaints. Current state (deleted rows soft-deleted). One row per complaint x component.
+owner: vehicle-safety-data-product
+steward: data-engineering
+grain: complaint x component (cmplid)
+update: daily full snapshot from NHTSA, applied as inserts / updates / soft deletes
+freshness: {column: received_date, max_age_days: 7, severity: warn}
+row_count: {min: 2000000}
+primary_key: [cmplid]
+columns:
+  cmplid: {type: string, nullable: false, description: NHTSA row id (complaint x component). NHTSA notes it can change between files.}
+  odino: {type: string, nullable: false, description: Complaint id. Repeated for each component named in the complaint.}
+  make: {type: string, max_null_pct: 0.1, description: Vehicle make, upper case}
+  model: {type: string, description: Vehicle model}
+  model_year: {type: int, range: [1949, 2030], max_null_pct: 6, description: "Model year; NULL when NHTSA reports 9999 (unknown)"}
+  # 149 complaints (mostly 2003-04) have no component in the source: allowed, mapped to the unknown member in gold
+  component_path: {type: string, max_null_pct: 0.01, regex: "^[A-Z0-9 ,/&().;'-]+(:[A-Z0-9 ,/&().;'-]+)*$", description: "Component hierarchy SYSTEM:SUBSYSTEM:PART"}
+  component_system: {type: string, max_null_pct: 0.01, description: Top level of component_path}
+  received_date: {type: date, nullable: false, description: Date NHTSA received the complaint}
+  fail_date: {type: date, max_null_pct: 10, description: Date of the incident; NULL when NHTSA has 0 or an invalid date}
+  state: {type: string, max_null_pct: 2, description: Consumer state (validated against the US states reference)}
+  injured: {type: int, range: [0, 99]}
+  deaths: {type: int, range: [0, 99]}
+  miles: {type: int, range: [1, 9999999]}
+  complaint_type: {type: string, accepted_values: [IVOQ, EVOQ, LETR, VOQ, SVOQ, CAG, CON, RC, MVOQ, INS, MIVQ, MAVQ, RP, WARR, DP, EWR, FLT, PSA, OTHE, ND], description: "Source of the complaint. OTHE and ND appear in the data but not in NHTSA's CMPL.txt"}
+  narrative: {type: string, pii: free_text, description: "Consumer's own words. Can contain phone numbers, emails and names: use gold.complaint_documents (scrubbed) for AI and search."}
+  vin_prefix: {type: string, pii: partial_identifier, description: First 11 characters of the VIN (NHTSA never publishes the full VIN)}
+  dealer_phone: {type: string, pii: contact, description: Dealer phone number}
+  city: {type: string, pii: location}
+checks:
+  - name: received after failure
+    description: A complaint is normally received on or after the incident date.
+    sql_violations: "fail_date IS NOT NULL AND received_date < fail_date"
+    max_violation_pct: 1
+    severity: warn

@@ -1,0 +1,44 @@
+{
+  "two_merges": {
+    "description": "two MERGEs (upserts, then soft deletes), recorded from lake/silver/complaints history",
+    "merges": [
+      {
+        "numTargetRowsUpdated": 250,
+        "numTargetRowsInserted": 250,
+        "numTargetFilesRemoved": 16,
+        "numTargetFilesAdded": 16,
+        "numTargetRowsCopied": 2270045,
+        "numTargetBytesAdded": 894796931,
+        "executionTimeMs": 41248,
+        "rewriteTimeMs": 31582
+      },
+      {
+        "numTargetRowsUpdated": 250,
+        "numTargetRowsInserted": 0,
+        "numTargetFilesRemoved": 16,
+        "numTargetFilesAdded": 12,
+        "numTargetRowsCopied": 2270295,
+        "numTargetBytesAdded": 894062611,
+        "executionTimeMs": 29081,
+        "rewriteTimeMs": 26839
+      }
+    ]
+  },
+  "single_merge": {
+    "day1_seconds": 304.2,
+    "day2_seconds": 328.4,
+    "merges": [
+      {
+        "numTargetRowsUpdated": 500,
+        "numTargetRowsInserted": 250,
+        "numTargetFilesRemoved": 16,
+        "numTargetFilesAdded": 16,
+        "numTargetRowsCopied": 2269795,
+        "numTargetBytesAdded": 894800914,
+        "numTargetDeletionVectorsAdded": 0,
+        "executionTimeMs": 43797,
+        "rewriteTimeMs": 33811
+      }
+    ]
+  }
+}
